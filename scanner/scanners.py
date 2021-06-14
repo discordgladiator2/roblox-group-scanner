@@ -70,17 +70,17 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
                     local_counter.count()
 
-                    # skip locked groups
+                    # skip and ignore locked groups
                     if data.get("isLocked"):
                         gid_ignore[gid] = True
                         continue
 
-                    # skip no owner and no public entry groups
+                    # skip and ignore no owner & no public entry groups
                     if not data.get("owner") and not data.get("publicEntryAllowed"):
                         gid_ignore[gid] = True
                         continue
                     
-                    # currently unclaimable group
+                    # skip unclaimable groups
                     if data.get("owner") or not data.get("publicEntryAllowed"):
                         continue
 
