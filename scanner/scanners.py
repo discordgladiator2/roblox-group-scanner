@@ -69,7 +69,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                             send_webhook(webhook_url, embeds=[embed_from_group(data)])
 
                     # no owner and no public entry / is locked
-                    elif not data.get("owner") and (not data.get("publicEntryAllowed") or data.get("isLocked")):
+                    elif data.get("isLocked") or (not data.get("owner") and not data.get("publicEntryAllowed")):
                         gid_cache[gid] = True
                     
                     continue
