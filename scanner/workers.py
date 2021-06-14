@@ -8,7 +8,8 @@ if os.name == "nt":
     import win32process
 
 def worker_func(worker_num, worker_barrier, thread_count,
-                webhook_url, count_queue, gid_range, proxies):
+                webhook_url, count_queue, gid_range, proxies,
+                min_funds=None, min_members=None):
     # set cpu affinity for this process
     cpu_num = worker_num % multiprocessing.cpu_count()
     if os.name == "nt":
@@ -31,7 +32,8 @@ def worker_func(worker_num, worker_barrier, thread_count,
             args=(worker_num, thread_num, thread_barrier, thread_event,
                   gid_counter, gid_range, gid_lock, gid_ignore,
                   webhook_url,
-                  local_counter, proxies)
+                  local_counter, proxies,
+                  min_funds, min_members)
         )
         for thread_num in range(thread_count)
     ]

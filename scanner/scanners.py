@@ -8,7 +8,8 @@ logging.getLogger().setLevel(logging.CRITICAL)
 
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                  gid_counter, gid_range, gid_lock, gid_ignore,
-                 webhook_url, local_counter, proxies=None):
+                 webhook_url, local_counter, proxies=None,
+                 min_funds=None, min_members=None):
     ssl_context = ssl.create_default_context()
     thread_barrier.wait()
     thread_event.wait()
@@ -84,7 +85,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                         continue
 
                     # if enabld, skip groups with less members than specified
-                    if args.min_members and args.min_members > data["memberCount"]:
+                    if min_members and min_members > data["memberCount"]:
                         continue
                     
                     # get group funds
@@ -97,7 +98,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                             pass
                     
                     # if enabld, skip groups with less funds than specified
-                    if args.min_funds and (not funds or args.min_funds > funds):
+                    if min_funds and (not funds or min_funds > funds):
                         continue
 
                     # avoid notifying user about the same group multiple times
