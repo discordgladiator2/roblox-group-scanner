@@ -15,11 +15,9 @@ if args.proxy_list:
                for x in proxies]
     args.proxy_list.close()
 
-# amounts used to split range and proxies across workers
+# create workers
 gid_per_worker = int((args.range[1] - args.range[0]) / args.workers)
 proxies_per_worker = proxies and int(len(proxies)/args.workers)
-
-# create workers
 worker_barrier = multiprocessing.Barrier(args.workers + 1)
 count_queue = multiprocessing.Queue()
 workers = []
@@ -30,11 +28,13 @@ for worker_num in range(args.workers):
         args.range[0] + (gid_per_worker * worker_num),
         args.range[0] + (gid_per_worker * (worker_num + 1)),
     )
+
     # split proxies for this worker
     proxy_chunk = None
     if proxies:
         proxy_chunk = proxies[proxies_per_worker * worker_num:proxies_per_worker * (worker_num+1)]
         random.shuffle(proxy_chunk)
+        
     # create worker
     worker = multiprocessing.Process(
         target=worker_func,
