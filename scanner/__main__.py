@@ -1,6 +1,5 @@
 from arguments import parse_args
 from workers import worker_func
-from cachetools import TTLCache
 import multiprocessing
 import random
 import time
@@ -34,7 +33,7 @@ for worker_num in range(args.workers):
     if proxies:
         proxy_chunk = proxies[proxies_per_worker * worker_num:proxies_per_worker * (worker_num+1)]
         random.shuffle(proxy_chunk)
-        
+
     # create worker
     worker = multiprocessing.Process(
         target=worker_func,
@@ -54,8 +53,9 @@ for worker in workers:
 worker_barrier.wait()
 
 # count checks per minute
-count_cache = TTLCache(1024**2, 60)
+count_cache = []
 while any(w.is_alive() for w in workers):
-    count_cache.append(count_queue.get())
-    cpm = sum(count_cache)
-    print(f"\rCPM: {cpm}", end="")
+    count_cache.append((time.time(), count_queue.get()))
+    count_cache = [x for x in count_cache if 60 > time.time() - x[0]]
+    cpm = sum([x[1] for x in count_cache])
+    print(f"\rChecks per Minute: {cpm}", end="")
