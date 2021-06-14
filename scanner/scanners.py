@@ -27,6 +27,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             else:
                 sock.connect(("groups.roblox.com", 443))
             sock = ssl_context.wrap_socket(sock, server_hostname="groups.roblox.com")
+            
         except Exception as err:
             logging.warning(f"Couldn't establish connection (proxy {proxy_addr}): {err!r}")
             if sock:
@@ -40,7 +41,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
         while True:
             with gid_lock:
                 gid = gid_range[0] + (next(gid_counter) % (gid_range[1]-gid_range[0]))
-
+            
             if gid in gid_cache:
                 continue
             
