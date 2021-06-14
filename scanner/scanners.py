@@ -15,6 +15,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
     while True:
         proxy_addr = proxies and next(proxies) or None
+        sock = None
 
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,6 +29,12 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             sock = ssl_context.wrap_socket(sock, server_hostname="groups.roblox.com")
         except Exception as err:
             logging.warning(f"Couldn't establish connection (proxy {proxy_addr}): {err!r}")
+            if sock:
+                try:
+                    sock.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+                sock.close()
             continue
 
         while True:
