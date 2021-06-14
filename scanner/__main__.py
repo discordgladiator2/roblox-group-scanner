@@ -26,7 +26,7 @@ for worker_num in range(args.workers):
     gid_range = (
         args.range[0] + (gid_per_worker * worker_num),
         args.range[0] + (gid_per_worker * (worker_num + 1)),
-    )
+    )c
 
     # split proxies for this worker
     proxy_chunk = None
@@ -58,4 +58,4 @@ while any(w.is_alive() for w in workers):
     count_cache.append((time.time(), count_queue.get()))
     count_cache = [x for x in count_cache if 60 > time.time() - x[0]]
     cpm = sum([x[1] for x in count_cache])
-    print(f"\rChecks per Minute: {cpm}", end="")
+    print(f"\rCPM: {cpm}", end="")
