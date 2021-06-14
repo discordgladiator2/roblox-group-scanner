@@ -7,7 +7,7 @@ import traceback
 logging.getLogger().setLevel(logging.CRITICAL)
 
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
-                 gid_counter, gid_range, gid_lock, gid_cache,
+                 gid_counter, gid_range, gid_lock, gid_ignore,
                  webhook_url, local_counter, proxies=None):
     ssl_context = ssl.create_default_context()
     thread_barrier.wait()
@@ -42,7 +42,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             with gid_lock:
                 gid = gid_range[0] + (next(gid_counter) % (gid_range[1]-gid_range[0]))
             
-            if gid in gid_cache:
+            if gid in gid_ignore:
                 continue
             
             try:
@@ -55,7 +55,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                 # invalid group
                 if resp.startswith(b"HTTP/1.1 400"):
-                    gid_cache[gid] = True
+                    gid_ignore[gid] = True
                     local_counter.count()
                     continue
                 
@@ -70,7 +70,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     
                     # claimable group
                     if not data.get("owner") and data.get("publicEntryAllowed") and not data.get("isLocked"):
-                        gid_cache[gid] = True
+                        gid_ignore[gid] = True
                         print(f"\r{data['id']} - {data['name']} - {data['memberCount']}" + (" " * 30), end="\n")
                         # send webhook, if url is specified
                         if webhook_url:
@@ -78,7 +78,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                     # no owner and no public entry / is locked
                     elif data.get("isLocked") or (not data.get("owner") and not data.get("publicEntryAllowed")):
-                        gid_cache[gid] = True
+                        gid_ignore[gid] = True
                     
                     continue
                 
