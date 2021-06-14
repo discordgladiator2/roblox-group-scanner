@@ -111,7 +111,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     if webhook_url:
                         send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
             
-                # unrecognized
+                # unrecognized status code
                 raise Exception(
                     f"Unrecognized statusline while reading response: {resp[:20]}")
 
