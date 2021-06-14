@@ -42,6 +42,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             with gid_lock:
                 gid = gid_range[0] + (next(gid_counter) % (gid_range[1]-gid_range[0]))
             
+            # skip previously ignored groups
             if gid in gid_ignore:
                 continue
             
@@ -67,30 +68,48 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 if resp.startswith(b"HTTP/1.1 200"):
                     data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
                     local_counter.count()
-                    
-                    # claimable group
-                    if not data.get("owner") and data.get("publicEntryAllowed") and not data.get("isLocked"):
-                        funds = None
-                        for _ in range(3):
-                            try:
-                                funds = get_group_funds(gid, proxies and next(proxies))
-                                break
-                            except:
-                                pass
 
+                    # skip locked groups
+                    if data.get("isLocked"):
                         gid_ignore[gid] = True
-                        print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {funds if funds is not None else '?'} R$" + (" " * 30), end="\n")
-                        
-                        # send webhook, if url is specified
-                        if webhook_url:
-                            send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
+                        continue
 
-                    # no owner and no public entry / is locked
-                    elif data.get("isLocked") or (not data.get("owner") and not data.get("publicEntryAllowed")):
+                    # skip no owner and no public entry groups
+                    if not data.get("owner") and not data.get("publicEntryAllowed"):
                         gid_ignore[gid] = True
+                        continue
                     
-                    continue
-                
+                    # currently unclaimable group
+                    if data.get("owner") or not data.get("publicEntryAllowed"):
+                        continue
+
+                    # if enabld, skip groups with less members than specified
+                    if args.min_members and args.min_members > data["memberCount"]:
+                        continue
+                    
+                    # get group funds
+                    funds = None
+                    for _ in range(3):
+                        try:
+                            funds = get_group_funds(gid, proxies and next(proxies))
+                            break
+                        except:
+                            pass
+                    
+                    # if enabld, skip groups with less funds than specified
+                    if args.min_funds and (not funds or args.min_funds > funds):
+                        continue
+
+                    # avoid notifying user about the same group multiple times
+                    gid_ignore[gid] = True
+                    
+                    # log group info to console (id - name - members - funds)
+                    print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {funds if funds is not None else '?'} R$" + (" " * 30), end="\n")
+                    
+                    # send webhook, if url is specified
+                    if webhook_url:
+                        send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
+            
                 # unrecognized
                 raise Exception(
                     f"Unrecognized statusline while reading response: {resp[:20]}")
