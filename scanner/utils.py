@@ -42,7 +42,7 @@ def get_group_funds(group_id, proxy_addr=None):
         sock.recv(1024**2)
     else:
         sock.connect(("economy.roblox.com", 443))
-    sock = ssl_context.wrap_socket(sock, server_hostname="economy.roblox.com")
+    sock = ssl.create_default_context().wrap_socket(sock, server_hostname="economy.roblox.com")
     sock.send(f"GET /v1/groups/{group_id}/currency HTTP/1.1\r\nHost: economy.roblox.com\r\n\r\n")
     resp = sock.recv(1024**2)
 
