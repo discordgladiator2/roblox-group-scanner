@@ -27,7 +27,9 @@ def parse_args():
                         type=argparse.FileType("r", errors="ignore"))
     parser.add_argument("-u", "--webhook-url", help="URL of webhook to be called when a claimable group is found",
                         required=False)
-    parser.add_argument("-u", "--webhook-url", help="URL of webhook to be called when a claimable group is found",
-                        required=False)
+    parser.add_argument("-f", "--min-funds", help="Min. amount of funds in a group",
+                        type=int, required=False)
+    parser.add_argument("-m", "--min-members", help="Min. amount of members in a group",
+                        type=int, required=False)
     args = parser.parse_args()
     return args
