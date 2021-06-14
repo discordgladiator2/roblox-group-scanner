@@ -26,7 +26,7 @@ for worker_num in range(args.workers):
     gid_range = (
         args.range[0] + (gid_per_worker * worker_num),
         args.range[0] + (gid_per_worker * (worker_num + 1)),
-    )c
+    )
 
     # split proxies for this worker
     proxy_chunk = None
