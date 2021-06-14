@@ -10,7 +10,7 @@ class LocalCounter:
     def count(self):
         with self._lock:
             self._value += 1
-            if self._value and self._value % self.notify_per == 0:
+            if self._value % self.notify_per == 0:
                 self._event.set()
 
     def wait(self):
