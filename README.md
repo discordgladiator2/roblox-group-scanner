@@ -1,3 +1,6 @@
+# roblox-group-scanner
+Python 3 tool for finding unclaimed groups on Roblox, with support for multi-threading, multi-processing and HTTP proxies.
+
 # Usage
 ```
 usage: scanner [-h] [-t THREADS] [-w WORKERS] [-r RANGE] [-p PROXY_LIST] [-u WEBHOOK_URL]
