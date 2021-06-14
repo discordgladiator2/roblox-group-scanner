@@ -1,5 +1,6 @@
 from arguments import parse_args
 from workers import worker_func
+from cachetools import TTLCache
 import multiprocessing
 import random
 import time
@@ -53,9 +54,8 @@ for worker in workers:
 worker_barrier.wait()
 
 # count checks per minute
-count_cache = []
+count_cache = TTLCache(1024**2, 60)
 while any(w.is_alive() for w in workers):
-    count_cache.append((time.time(), count_queue.get()))
-    count_cache = [x for x in count_cache if 60 > time.time() - x[0]]
-    cpm = sum([x[1] for x in count_cache])
+    count_cache.append(count_queue.get())
+    cpm = sum(count_cache)
     print(f"\rCPM: {cpm}", end="")
