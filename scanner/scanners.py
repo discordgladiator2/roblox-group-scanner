@@ -1,4 +1,4 @@
-from utils import send_webhook, embed_from_group
+from utils import send_webhook, embed_from_group, get_group_funds
 import socket
 import ssl
 import json
@@ -70,11 +70,20 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     
                     # claimable group
                     if not data.get("owner") and data.get("publicEntryAllowed") and not data.get("isLocked"):
+                        funds = None
+                        for _ in range(3):
+                            try:
+                                funds = get_group_funds(gid, proxies and next(proxies))
+                                break
+                            except:
+                                pass
+
                         gid_ignore[gid] = True
-                        print(f"\r{data['id']} - {data['name']} - {data['memberCount']}" + (" " * 30), end="\n")
+                        print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {funds if funds is not None else '?'} R$" + (" " * 30), end="\n")
+                        
                         # send webhook, if url is specified
                         if webhook_url:
-                            send_webhook(webhook_url, embeds=[embed_from_group(data)])
+                            send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
                     # no owner and no public entry / is locked
                     elif data.get("isLocked") or (not data.get("owner") and not data.get("publicEntryAllowed")):
