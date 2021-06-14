@@ -50,7 +50,7 @@ def get_group_funds(group_id, proxy_addr=None):
         data = json.loads(resp.split("\r\n\r\n", 1)[1])
         return data.get("robux")
     
-    elif resp.startswith(b"HTTP/1.1 400") and b"code\":3" in resp:
+    elif resp.startswith(b"HTTP/1.1 403") and b"code\":3" in resp:
         return
 
     raise Exception(f"Unrecognized statusline: {resp[:20]}")
