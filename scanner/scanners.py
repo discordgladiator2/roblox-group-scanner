@@ -48,13 +48,14 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 retry_gid = None
             else:
                 with gid_lock:
-                    gid = gid_range[0] + next(gid_counter) % (gid_range[1]-gid_range[0])
+                    gid = gid_range[0] + next(gid_counter) % (gid_range[1] - gid_range[0])
                 
             # skip previously ignored groups
             if gid in gid_ignore:
                 continue
             
             try:
+                # send request and read response
                 sock.send(f"GET /v1/groups/{gid} HTTP/1.1\r\nHost: groups.roblox.com\r\n\r\n".encode())
                 resp = sock.recv(1024**2)
 
@@ -62,67 +63,59 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 if resp.startswith(b"HTTP/1.1 429") or resp.startswith(b"HTTP/1.1 403"):
                     retry_gid = gid
                     break
-
                 # invalid group
                 if resp.startswith(b"HTTP/1.1 400"):
                     gid_ignore[gid] = True
                     local_counter.count()
                     continue
-                
                 # server error
                 if resp.startswith(b"HTTP/1.1 500"):
                     retry_gid = gid
                     continue
-
-                # successful response
-                if resp.startswith(b"HTTP/1.1 200"):
-                    data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
-                    local_counter.count()
-
-                    # skip and ignore locked groups
-                    if data.get("isLocked"):
-                        gid_ignore[gid] = True
-                        continue
-
-                    # skip and ignore no owner & no public entry groups
-                    if not data.get("owner") and not data.get("publicEntryAllowed"):
-                        gid_ignore[gid] = True
-                        continue
-                    
-                    # skip unclaimable groups
-                    if data.get("owner") or not data.get("publicEntryAllowed"):
-                        continue
-
-                    # if enabld, skip groups with less members than specified
-                    if min_members and min_members > data["memberCount"]:
-                        continue
-                    
-                    # get group funds
-                    funds = None
-                    for _ in range(3):
-                        try:
-                            funds = get_group_funds(gid, proxy_addr=proxies and next(proxies), timeout=timeout)
-                            break
-                        except:
-                            pass
-                    
-                    # if enabld, skip groups with less funds than specified
-                    if min_funds and (not funds or min_funds > funds):
-                        continue
-
-                    # avoid notifying user about the same group multiple times
-                    gid_ignore[gid] = True
-                    
-                    # log group info to console (id - name - members - funds)
-                    print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {f'{funds} R$' if funds is not None else '?'}" + (" " * 30), end="\n")
-                    
-                    # send webhook, if url is specified
-                    if webhook_url:
-                        send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
-            
-                # unrecognized status code
-                raise Exception(
+                # unexpected status
+                if not resp.startswith(b"HTTP/1.1 200"):
+                    raise Exception(
                     f"Unrecognized statusline while reading response: {resp[:20]}")
+                
+                data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
+                local_counter.count()
+
+                # skip and ignore locked groups
+                if data.get("isLocked"):
+                    gid_ignore[gid] = True
+                    continue
+                # skip and ignore no owner & no public entry groups
+                if not data.get("owner") and not data.get("publicEntryAllowed"):
+                    gid_ignore[gid] = True
+                    continue
+                # skip unclaimable groups
+                if data.get("owner") or not data.get("publicEntryAllowed"):
+                    continue
+                # if enabld, skip groups with less members than specified
+                if min_members and min_members > data["memberCount"]:
+                    continue
+                
+                # get group funds
+                funds = None
+                for _ in range(3):
+                    try:
+                        funds = get_group_funds(gid, proxy_addr=proxies and next(proxies), timeout=timeout)
+                        break
+                    except:
+                        pass
+                # if enabld, skip groups with less funds than specified
+                if min_funds and (not funds or min_funds > funds):
+                    continue
+
+                # avoid notifying user about the same group multiple times
+                gid_ignore[gid] = True
+                
+                # log group info to console (id - name - members - funds)
+                print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {f'{funds} R$' if funds is not None else '?'}" + (" " * 30), end="\n")
+                
+                # send webhook, if url is specified
+                if webhook_url:
+                    send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
             except Exception as err:
                 logging.warning(f"Dropping connection due to error: {err!r}")
