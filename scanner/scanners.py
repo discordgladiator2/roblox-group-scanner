@@ -8,11 +8,14 @@ logging.getLogger().setLevel(logging.CRITICAL)
 
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                  gid_counter, gid_range, gid_lock, gid_ignore,
-                 webhook_url, local_counter, proxies=None,
-                 min_funds=None, min_members=None):
+                 webhook_url, local_counter, proxies,
+                 min_funds, min_members,
+                 timeout):
     ssl_context = ssl.create_default_context()
     thread_barrier.wait()
     thread_event.wait()
+
+    retry_gid = None
 
     while True:
         proxy_addr = proxies and next(proxies) or None
@@ -40,9 +43,13 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             continue
 
         while True:
-            with gid_lock:
-                gid = gid_range[0] + (next(gid_counter) % (gid_range[1]-gid_range[0]))
-            
+            if retry_gid:
+                gid = retry_gid
+                retry_gid = None
+            else:
+                with gid_lock:
+                    gid = gid_range[0] + next(gid_counter) % (gid_range[1]-gid_range[0])
+                
             # skip previously ignored groups
             if gid in gid_ignore:
                 continue
@@ -53,6 +60,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                 # ratelimited / ip blocked
                 if resp.startswith(b"HTTP/1.1 429") or resp.startswith(b"HTTP/1.1 403"):
+                    retry_gid = gid
                     break
 
                 # invalid group
@@ -63,6 +71,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 
                 # server error
                 if resp.startswith(b"HTTP/1.1 500"):
+                    retry_gid = gid
                     continue
 
                 # successful response
@@ -92,7 +101,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     funds = None
                     for _ in range(3):
                         try:
-                            funds = get_group_funds(gid, proxies and next(proxies))
+                            funds = get_group_funds(gid, proxy_addr=proxies and next(proxies), timeout=timeout)
                             break
                         except:
                             pass
@@ -105,7 +114,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     gid_ignore[gid] = True
                     
                     # log group info to console (id - name - members - funds)
-                    print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {funds if funds is not None else '?'} R$" + (" " * 30), end="\n")
+                    print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {f'{funds} R$' if funds is not None else '?'}" + (" " * 30), end="\n")
                     
                     # send webhook, if url is specified
                     if webhook_url:
@@ -117,6 +126,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
             except Exception as err:
                 logging.warning(f"Dropping connection due to error: {err!r}")
+                retry_gid = gid
                 break
     
         try:

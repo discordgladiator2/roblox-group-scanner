@@ -28,14 +28,14 @@ def embed_from_group(data, funds=None):
             dict(name="Group Id", value=data["id"]),
             dict(name="Group Name", value=data["name"]),
             dict(name="Group Members", value=data.get("memberCount", "?")),
-            dict(name="Group Funds", value=f"{funds if funds is not None else '?'} R$")
+            dict(name="Group Funds", value=f"{f'{funds} R$' if funds is not None else '?'}")
         ],
         timestamp=datetime.now().isoformat()
     )
 
-def get_group_funds(group_id, proxy_addr=None):
+def get_group_funds(group_id, proxy_addr=None, timeout=5.0):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(5)
+    sock.settimeout(timeout)
     if proxy_addr:
         sock.connect(proxy_addr)
         sock.send(b"CONNECT economy.roblox.com:443 HTTP/1.1\r\n\r\n")

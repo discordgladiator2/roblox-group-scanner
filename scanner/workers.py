@@ -9,7 +9,8 @@ if os.name == "nt":
 
 def worker_func(worker_num, worker_barrier, thread_count,
                 webhook_url, count_queue, gid_range, proxies,
-                min_funds=None, min_members=None):
+                min_funds, min_members,
+                timeout):
     # set cpu affinity for this process
     cpu_num = worker_num % multiprocessing.cpu_count()
     if os.name == "nt":
@@ -33,7 +34,8 @@ def worker_func(worker_num, worker_barrier, thread_count,
                   gid_counter, gid_range, gid_lock, gid_ignore,
                   webhook_url,
                   local_counter, proxies,
-                  min_funds, min_members)
+                  min_funds, min_members,
+                  timeout)
         )
         for thread_num in range(thread_count)
     ]
