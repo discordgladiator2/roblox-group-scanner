@@ -6,6 +6,9 @@ import logging
 import traceback
 logging.getLogger().setLevel(logging.CRITICAL)
 
+class ResponseError(Exception):
+    pass
+
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                  gid_counter, gid_range, gid_lock, gid_ignore,
                  webhook_url, local_counter, proxies,
@@ -64,7 +67,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                 # ratelimited / ip blocked
                 if resp.startswith(b"HTTP/1.1 429") or resp.startswith(b"HTTP/1.1 403"):
-                    raise Exception(
+                    raise ResponseError(
                         "Ratelimit or IP is blocked")
                 # invalid group
                 elif resp.startswith(b"HTTP/1.1 400") and b"Group is invalid or does not exist." in resp:
@@ -73,11 +76,11 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     continue
                 # server error
                 elif resp.startswith(b"HTTP/1.1 500"):
-                    raise Exception(
+                    raise ResponseError(
                         "Server returned internal error")
                 # unexpected status
                 elif not resp.startswith(b"HTTP/1.1 200"):
-                    raise Exception(
+                    raise ResponseError(
                         f"Unrecognized statusline while reading response: {resp[:20]}")
                 
                 data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
@@ -124,6 +127,12 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     # send group details to webhook
                     send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
+            except ResponseError as err:
+                logging.warning(f"Dropping connection due to error: {err!r}")
+                retry_gid = gid
+                if not no_close:
+                    break
+                
             except Exception as err:
                 logging.warning(f"Dropping connection due to error: {err!r}")
                 retry_gid = gid
