@@ -21,6 +21,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
         proxy_addr = proxies and next(proxies) or None
         sock = None
 
+        # establish connection to groups.roblox.com
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
@@ -33,7 +34,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
             sock = ssl_context.wrap_socket(sock, server_hostname="groups.roblox.com")
             
         except Exception as err:
-            logging.warning(f"Couldn't establish connection (proxy {proxy_addr}): {err!r}")
+            logging.warning(
+                f"Couldn't establish connection to groups.roblox.com (proxy {proxy_addr}): {err!r}")
             if sock:
                 try:
                     sock.shutdown(socket.SHUT_RDWR)
@@ -41,7 +43,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     pass
                 sock.close()
             continue
-
+        
+        # scan for claimable groups matching criteria
         while True:
             if retry_gid:
                 gid = retry_gid
