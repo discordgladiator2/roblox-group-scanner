@@ -75,7 +75,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 # unexpected status
                 if not resp.startswith(b"HTTP/1.1 200"):
                     raise Exception(
-                    f"Unrecognized statusline while reading response: {resp[:20]}")
+                        f"Unrecognized statusline while reading response: {resp[:20]}")
                 
                 data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
                 local_counter.count()
