@@ -3,8 +3,8 @@ Python 3 tool for finding unclaimed groups on Roblox. Supports multi-threading, 
 
 # Usage
 ```
-usage: scanner [-h] [-t THREADS] [-w WORKERS] [-r RANGE] [-p PROXY_LIST] [-u WEBHOOK_URL] [-f MIN_FUNDS]
-               [-m MIN_MEMBERS]
+usage: scanner [-h] [-t THREADS] [-w WORKERS] [-r RANGE] [--timeout TIMEOUT] [-p PROXY_LIST] [-u WEBHOOK_URL]
+               [-f MIN_FUNDS] [-m MIN_MEMBERS]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -14,6 +14,7 @@ optional arguments:
                         Number of workers
   -r RANGE, --range RANGE
                         Group id range
+  --timeout TIMEOUT     Max. time for connections and responses
   -p PROXY_LIST, --proxy-list PROXY_LIST
                         File containg list of proxies
   -u WEBHOOK_URL, --webhook-url WEBHOOK_URL
