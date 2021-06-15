@@ -61,8 +61,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                 # ratelimited / ip blocked
                 if resp.startswith(b"HTTP/1.1 429") or resp.startswith(b"HTTP/1.1 403"):
-                    retry_gid = gid
-                    break
+                    raise Exception(
+                        "Ratelimit or IP is blocked")
                 # invalid group
                 if resp.startswith(b"HTTP/1.1 400"):
                     gid_ignore[gid] = True
@@ -70,8 +70,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     continue
                 # server error
                 if resp.startswith(b"HTTP/1.1 500"):
-                    retry_gid = gid
-                    continue
+                    raise Exception(
+                        "Server returned internal error")
                 # unexpected status
                 if not resp.startswith(b"HTTP/1.1 200"):
                     raise Exception(
@@ -91,7 +91,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 # skip unclaimable groups
                 if data.get("owner") or not data.get("publicEntryAllowed"):
                     continue
-                # if enabld, skip groups with less members than specified
+                # skip groups with less members than specified
                 if min_members and min_members > data["memberCount"]:
                     continue
                 
@@ -99,11 +99,15 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 funds = None
                 for _ in range(3):
                     try:
-                        funds = get_group_funds(gid, proxy_addr=proxies and next(proxies), timeout=timeout)
+                        funds = get_group_funds(
+                            gid,
+                            proxy_addr=proxies and next(proxies),
+                            timeout=timeout)
                         break
                     except:
                         pass
-                # if enabld, skip groups with less funds than specified
+
+                # skip groups with less funds than specified
                 if min_funds and (not funds or min_funds > funds):
                     continue
 
@@ -111,10 +115,10 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 gid_ignore[gid] = True
                 
                 # log group info to console (id - name - members - funds)
-                print(f"\r{data['id']} - {data['name']} - {data['memberCount']} - {f'{funds} R$' if funds is not None else '?'}" + (" " * 30), end="\n")
+                print(f"\rFound group: {data['id']} - {data['name']} - {data['memberCount']} - {f'{funds} R$' if funds is not None else '?'}" + (" " * 30), end="\n")
                 
-                # send webhook, if url is specified
                 if webhook_url:
+                    # send group details to webhook
                     send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
             except Exception as err:
