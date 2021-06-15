@@ -10,7 +10,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                  gid_counter, gid_range, gid_lock, gid_ignore,
                  webhook_url, local_counter, proxies,
                  min_funds, min_members,
-                 timeout):
+                 timeout, no_close):
     ssl_context = ssl.create_default_context()
     thread_barrier.wait()
     thread_event.wait()

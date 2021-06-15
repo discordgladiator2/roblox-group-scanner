@@ -41,7 +41,7 @@ for worker_num in range(args.workers):
               args.webhook_url,
               count_queue, gid_range, proxy_chunk,
               args.min_funds, args.min_members,
-              args.timeout)
+              args.timeout, args.no_close)
     )
     workers.append(worker)
 

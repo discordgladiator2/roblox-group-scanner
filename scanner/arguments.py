@@ -33,5 +33,7 @@ def parse_args():
                         type=int, required=False)
     parser.add_argument("-m", "--min-members", help="Min. amount of members in a group",
                         type=int, required=False)
+    parser.add_argument("-n", "--no-close", help="If enabled, connections won't be closed when possible. This is useful for proxies that switch IPs per request.",
+                        action="store_true", default=False, required=False)
     args = parser.parse_args()
     return args
