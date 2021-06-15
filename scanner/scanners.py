@@ -127,15 +127,11 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     # send group details to webhook
                     send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
-            except ResponseError as err:
-                logging.warning(f"Dropping connection due to error: {err!r}")
-                retry_gid = gid
-                if not no_close:
-                    break
-                
             except Exception as err:
                 logging.warning(f"Dropping connection due to error: {err!r}")
                 retry_gid = gid
+                if isinstance(err, ResponseError) and no_close:
+                    continue
                 break
         
         try:
