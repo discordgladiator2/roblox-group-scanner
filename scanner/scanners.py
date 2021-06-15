@@ -67,16 +67,16 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     raise Exception(
                         "Ratelimit or IP is blocked")
                 # invalid group
-                if resp.startswith(b"HTTP/1.1 400"):
+                elif resp.startswith(b"HTTP/1.1 400") and b"Group is invalid or does not exist." in resp:
                     gid_ignore[gid] = True
                     local_counter.count()
                     continue
                 # server error
-                if resp.startswith(b"HTTP/1.1 500"):
+                elif resp.startswith(b"HTTP/1.1 500"):
                     raise Exception(
                         "Server returned internal error")
                 # unexpected status
-                if not resp.startswith(b"HTTP/1.1 200"):
+                elif not resp.startswith(b"HTTP/1.1 200"):
                     raise Exception(
                         f"Unrecognized statusline while reading response: {resp[:20]}")
                 
@@ -98,7 +98,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 if min_members and min_members > data["memberCount"]:
                     continue
                 
-                # get group funds
+                # get amount of group funds
                 funds = None
                 for _ in range(3):
                     try:
@@ -128,7 +128,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 logging.warning(f"Dropping connection due to error: {err!r}")
                 retry_gid = gid
                 break
-    
+        
         try:
             sock.shutdown(socket.SHUT_RDWR)
         except OSError:
