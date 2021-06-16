@@ -1,5 +1,5 @@
 from scanners import scanner_func
-from structures import LocalCounter
+from structures import ChunkCounter
 import multiprocessing
 import threading
 import itertools
@@ -22,7 +22,7 @@ def worker_func(worker_num, worker_barrier, thread_count,
     gid_counter = itertools.count(0)
     gid_lock = threading.Lock()
     gid_ignore = {}
-    local_counter = LocalCounter(notify_per=1000)
+    local_counter = ChunkCounter(notify_per=1000)
     proxies = proxies and itertools.cycle(proxies) or None
     thread_barrier = threading.Barrier(thread_count + 1)
     thread_event = threading.Event()

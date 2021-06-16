@@ -1,6 +1,6 @@
 import threading
 
-class LocalCounter:
+class ChunkCounter:
     def __init__(self, value=0, notify_per=1000):
         self.notify_per = notify_per
         self._value = value
