@@ -72,7 +72,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 # invalid group
                 elif resp.startswith(b"HTTP/1.1 400") and b"Group is invalid or does not exist." in resp:
                     if not gid_cutoff or gid_cutoff >= gid:
-                        id_ignore[gid] = True
+                        gid_ignore[gid] = True
                     local_counter.count()
                     continue
                 # server error
