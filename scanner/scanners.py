@@ -75,10 +75,6 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                         gid_ignore[gid] = True
                     local_counter.count()
                     continue
-                # server error
-                elif resp.startswith(b"HTTP/1.1 500"):
-                    raise ResponseError(
-                        "Server returned internal error")
                 # unexpected status
                 elif not resp.startswith(b"HTTP/1.1 200"):
                     raise ResponseError(
