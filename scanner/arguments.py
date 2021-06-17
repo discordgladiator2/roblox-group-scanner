@@ -35,5 +35,7 @@ def parse_args():
                         type=int, required=False)
     parser.add_argument("-n", "--no-close", help="If enabled, connections won't be closed based on responses. This is useful for proxies that switch IPs per request.",
                         action="store_true", default=False, required=False)
+    parser.add_argument("-c", "--cut-off", help="Non-existent groups with IDs past this point won't be automatically skipped after the first attempt",
+                        default=None, required=False)
     args = parser.parse_args()
     return args

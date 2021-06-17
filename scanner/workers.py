@@ -10,7 +10,7 @@ if os.name == "nt":
 def worker_func(worker_num, worker_barrier, thread_count,
                 webhook_url, count_queue, gid_range, proxies,
                 min_funds, min_members,
-                timeout, no_close):
+                timeout, no_close, gid_cutoff):
     # set cpu affinity for this process
     cpu_num = worker_num % multiprocessing.cpu_count()
     if os.name == "nt":
@@ -31,7 +31,7 @@ def worker_func(worker_num, worker_barrier, thread_count,
         threading.Thread(
             target=scanner_func,
             args=(worker_num, thread_num, thread_barrier, thread_event,
-                  gid_counter, gid_range, gid_lock, gid_ignore,
+                  gid_counter, gid_range, gid_lock, gid_ignore, gid_cutoff,
                   webhook_url,
                   local_counter, proxies,
                   min_funds, min_members,

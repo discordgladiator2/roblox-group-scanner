@@ -10,7 +10,7 @@ class ResponseError(Exception):
     pass
 
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
-                 gid_counter, gid_range, gid_lock, gid_ignore,
+                 gid_counter, gid_range, gid_lock, gid_ignore, gid_cutoff,
                  webhook_url, local_counter, proxies,
                  min_funds, min_members,
                  timeout, no_close):
@@ -71,7 +71,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                         "Ratelimit or IP is blocked")
                 # invalid group
                 elif resp.startswith(b"HTTP/1.1 400") and b"Group is invalid or does not exist." in resp:
-                    gid_ignore[gid] = True
+                    if not gid_cutoff or gid_cutoff >= gid:
+                        id_ignore[gid] = True
                     local_counter.count()
                     continue
                 # server error
