@@ -31,5 +31,5 @@ optional arguments:
 ```
 
 ```bash
-python scanner --proxy-list proxies.txt --workers 16 --threads 500 --range 1-11000000
+python scanner --proxy-list proxies.txt --workers 8 --threads 100 --range 1-11000000
 ```
