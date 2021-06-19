@@ -30,7 +30,7 @@ def embed_from_group(data, funds=None):
             dict(name="Group Members", value=data.get("memberCount", "?")),
             dict(name="Group Funds", value=f"{f'{funds} R$' if funds is not None else '?'}")
         ],
-        timestamp=datetime.now().isoformat()
+        timestamp=datetime.utcnow().isoformat()
     )
 
 def get_group_funds(group_id, proxy_addr=None, timeout=5.0):
