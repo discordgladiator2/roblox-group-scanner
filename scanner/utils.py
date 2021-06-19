@@ -1,5 +1,5 @@
 from urllib.parse import urlsplit
-from datetime import datetime
+from datetime import datetime, timezone
 import socket
 import ssl
 import http.client
@@ -30,7 +30,7 @@ def embed_from_group(data, funds=None):
             dict(name="Group Members", value=data.get("memberCount", "?")),
             dict(name="Group Funds", value=f"{f'{funds} R$' if funds is not None else '?'}")
         ],
-        timestamp=datetime.utcnow().isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat()
     )
 
 def get_group_funds(group_id, proxy_addr=None, timeout=5.0):
