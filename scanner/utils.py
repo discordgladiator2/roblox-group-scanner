@@ -28,7 +28,7 @@ def embed_from_group(data, funds=None):
             dict(name="Group Id", value=data["id"]),
             dict(name="Group Name", value=data["name"]),
             dict(name="Group Members", value=data.get("memberCount", "?")),
-            dict(name="Group Funds", value=f"{f'{funds} R$' if funds is not None else '?'}")
+            dict(name="Group Funds", value=f"{f'R$ {funds}' if funds is not None else '?'}")
         ],
         timestamp=datetime.now(timezone.utc).isoformat()
     )
