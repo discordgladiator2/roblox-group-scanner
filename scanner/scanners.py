@@ -55,6 +55,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 
             # skip previously ignored groups
             if gid in gid_ignore:
+                gid = None
                 continue
             
             try:

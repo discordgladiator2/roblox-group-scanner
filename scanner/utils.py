@@ -51,7 +51,8 @@ def get_group_funds(group_id, proxy_addr=None, timeout=5.0):
         data = json.loads(resp.split(b"\r\n\r\n", 1)[1])
         return data.get("robux")
     
-    elif resp.startswith(b"HTTP/1.1 403") and b"code\":3" in resp:
+    # funds are not public
+    if resp.startswith(b"HTTP/1.1 403") and b"code\":3" in resp:
         return
 
     raise Exception(f"Unrecognized statusline: {resp[:20]}")

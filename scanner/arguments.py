@@ -1,14 +1,12 @@
 import argparse
 
 def parse_range(range_string):
-    fields = range_string.split("-")
-    
+    fields = range_string.split("-", 1)
     if len(fields) != 2 or not all(map(str.isdigit, fields)):
         raise argparse.ArgumentTypeError(
             f"'{range_string}' is not a valid ID range")
 
     fields = (int(fields[0]), int(fields[1]))
-
     if fields[0] > fields[1]:
         raise argparse.ArgumentTypeError(
             f"Start ID can't be larger than end ID")
