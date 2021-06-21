@@ -15,17 +15,18 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                  min_funds, min_members,
                  timeout, no_close):
     ssl_context = ssl.create_default_context()
+    gid = None
     thread_barrier.wait()
     thread_event.wait()
 
-    retry_gid = None
-
     while True:
-        proxy_addr = proxies and next(proxies) or None
-        sock = None
+        proxy_addr = None
+        if proxies:
+            proxy_addr = next(proxies)
 
         # establish connection to groups.roblox.com
         try:
+            sock = None
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
             if proxy_addr:
@@ -49,12 +50,8 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
         
         # scan for claimable groups matching criteria
         while True:
-            if retry_gid:
-                gid = retry_gid
-                retry_gid = None
-            else:
-                with gid_lock:
-                    gid = gid_range[0] + next(gid_counter) % (gid_range[1] - gid_range[0])
+            if not gid:
+                gid = gid_range[0] + next(gid_counter) % (gid_range[1] - gid_range[0])
                 
             # skip previously ignored groups
             if gid in gid_ignore:
@@ -74,6 +71,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     if not gid_cutoff or gid_cutoff >= gid:
                         gid_ignore[gid] = True
                     local_counter.count()
+                    gid = None
                     continue
                 # unexpected status
                 elif not resp.startswith(b"HTTP/1.1 200"):
@@ -86,16 +84,20 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                 # skip and ignore locked groups
                 if data.get("isLocked"):
                     gid_ignore[gid] = True
+                    gid = None
                     continue
                 # skip and ignore no owner & no public entry groups
                 if not data.get("owner") and not data.get("publicEntryAllowed"):
                     gid_ignore[gid] = True
+                    gid = None
                     continue
                 # skip unclaimable groups
                 if data.get("owner") or not data.get("publicEntryAllowed"):
+                    gid = None
                     continue
                 # skip groups with less members than specified
                 if min_members and min_members > data["memberCount"]:
+                    gid = None
                     continue
                 
                 # get amount of group funds
@@ -112,6 +114,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
 
                 # skip groups with less funds than specified
                 if min_funds and (not funds or min_funds > funds):
+                    gid = None
                     continue
 
                 # avoid notifying user about the same group multiple times
@@ -124,9 +127,10 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     # send group details to webhook
                     send_webhook(webhook_url, embeds=[embed_from_group(data, funds)])
 
+                gid = None
+
             except Exception as err:
                 logging.warning(f"Dropping connection due to error: {err!r}")
-                retry_gid = gid
                 if isinstance(err, ResponseError) and no_close:
                     continue
                 break

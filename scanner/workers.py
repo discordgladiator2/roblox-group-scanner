@@ -20,7 +20,6 @@ def worker_func(worker_num, worker_barrier, thread_count,
 
     # start threads
     gid_counter = itertools.count(0)
-    gid_lock = threading.Lock()
     gid_ignore = {}
     local_counter = ChunkCounter(notify_per=1000)
     proxies = proxies and itertools.cycle(proxies) or None
@@ -31,7 +30,7 @@ def worker_func(worker_num, worker_barrier, thread_count,
         threading.Thread(
             target=scanner_func,
             args=(worker_num, thread_num, thread_barrier, thread_event,
-                  gid_counter, gid_range, gid_lock, gid_ignore, gid_cutoff,
+                  gid_counter, gid_range, gid_ignore, gid_cutoff,
                   webhook_url,
                   local_counter, proxies,
                   min_funds, min_members,
