@@ -18,7 +18,7 @@ def send_webhook(url, content=None, embeds=[]):
     resp = conn.getresponse()
     data = resp.read()
     conn.close()
-    return resp.status >= 200
+    return resp.status in (200, 204)
 
 def embed_from_group(data, funds=None):
     return dict(
