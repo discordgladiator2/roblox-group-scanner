@@ -50,7 +50,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
         
         # scan for claimable groups matching criteria
         while True:
-            if not gid:
+            if gid is None:
                 gid = gid_range[0] + next(gid_counter) % (gid_range[1] - gid_range[0])
                 
             # skip previously ignored groups
