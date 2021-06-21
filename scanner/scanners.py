@@ -75,7 +75,7 @@ def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
                     gid = None
                     continue
                 # unexpected status
-                elif not resp.startswith(b"HTTP/1.1 200"):
+                if not resp.startswith(b"HTTP/1.1 200"):
                     raise ResponseError(
                         f"Unrecognized statusline while reading response: {resp[:20]}")
                 
