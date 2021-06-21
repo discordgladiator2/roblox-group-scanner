@@ -10,7 +10,7 @@ class ResponseError(Exception):
     pass
 
 def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
-                 gid_counter, gid_range, gid_lock, gid_ignore, gid_cutoff,
+                 gid_counter, gid_range, gid_ignore, gid_cutoff,
                  webhook_url, local_counter, proxies,
                  min_funds, min_members,
                  timeout, no_close):
