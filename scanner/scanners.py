@@ -13,6 +13,7 @@ def scanner_func(
         worker_num, thread_num,
         thread_barrier, thread_event,
         proxies, timeout, no_close,
+        webhook_url,
         local_counter,
         gid_counter, gid_range, gid_ignore, gid_cutoff,
         min_funds, min_members
