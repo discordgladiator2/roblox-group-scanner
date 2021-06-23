@@ -19,8 +19,8 @@ gid_per_worker = int((args.range[1] - args.range[0]) / args.workers)
 proxies_per_worker = proxies and int(len(proxies)/args.workers)
 worker_barrier = multiprocessing.Barrier(args.workers + 1)
 count_queue = multiprocessing.Queue()
-workers = []
 
+workers = []
 for worker_num in range(args.workers):
     # split id range for this worker
     gid_range = (
