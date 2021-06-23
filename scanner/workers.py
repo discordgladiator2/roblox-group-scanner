@@ -5,7 +5,7 @@ import threading
 import itertools
 import os
 if os.name == "nt":
-    import win32process
+    from win import set_affinity
 
 def worker_func(worker_num, worker_barrier, thread_count,
                 webhook_url, count_queue, gid_range, proxies,
@@ -14,7 +14,7 @@ def worker_func(worker_num, worker_barrier, thread_count,
     # set cpu affinity for this process
     cpu_num = worker_num % multiprocessing.cpu_count()
     if os.name == "nt":
-        win32process.SetProcessAffinityMask(-1, 1 << cpu_num)
+        set_affinity(0, 1 << cpu_num)
     else:
         os.sched_setaffinity(0, [cpu_num])
 
