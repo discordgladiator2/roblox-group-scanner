@@ -31,18 +31,26 @@ for worker_num in range(args.workers):
     # split proxies for this worker
     proxy_chunk = None
     if proxies:
-        proxy_chunk = proxies[proxies_per_worker * worker_num:proxies_per_worker * (worker_num+1)]
+        proxy_chunk = proxies[proxies_per_worker * worker_num : proxies_per_worker * (worker_num+1)]
         random.shuffle(proxy_chunk)
 
-    # create worker
+    # create workers
     worker = multiprocessing.Process(
         target=worker_func,
-        args=(worker_num, worker_barrier, args.threads,
-              args.webhook_url,
-              count_queue, gid_range, proxy_chunk,
-              args.min_funds, args.min_members,
-              args.timeout, args.no_close,
-              args.cut_off)
+        kwargs=dict(
+            worker_num=worker_num,
+            worker_barrier=worker_barrier,
+            thread_count=args.threads,
+            count_queue=count_queue,
+            proxies=proxy_chunk,
+            no_close=args.no_close,
+            timeout=args.timeout,
+            gid_range=gid_range,
+            gid_cutoff=args.cut_off,
+            min_members=args.min_members,
+            min_funds=args.min_funds,
+            webhook_url=args.webhook_url
+        )
     )
     workers.append(worker)
 

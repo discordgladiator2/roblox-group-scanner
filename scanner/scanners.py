@@ -9,11 +9,14 @@ logging.getLogger().setLevel(logging.CRITICAL)
 class ResponseError(Exception):
     pass
 
-def scanner_func(worker_num, thread_num, thread_barrier, thread_event,
-                 gid_counter, gid_range, gid_ignore, gid_cutoff,
-                 webhook_url, local_counter, proxies,
-                 min_funds, min_members,
-                 timeout, no_close):
+def scanner_func(
+        worker_num, thread_num,
+        thread_barrier, thread_event,
+        proxies, timeout, no_close,
+        local_counter,
+        gid_counter, gid_range, gid_ignore, gid_cutoff,
+        min_funds, min_members
+    ):
     gid = None
     ssl_context = ssl.create_default_context()
     thread_barrier.wait()

@@ -18,23 +18,33 @@ def worker_func(worker_num, worker_barrier, thread_count,
     else:
         os.sched_setaffinity(0, [cpu_num])
 
-    # start threads
+    proxies = proxies and itertools.cycle(proxies) or None
+    local_counter = ChunkCounter(notify_per=1000)
     gid_counter = itertools.count(0)
     gid_ignore = {}
-    local_counter = ChunkCounter(notify_per=1000)
-    proxies = proxies and itertools.cycle(proxies) or None
+
+    # create & start threads
     thread_barrier = threading.Barrier(thread_count + 1)
     thread_event = threading.Event()
-
     threads = [
         threading.Thread(
             target=scanner_func,
-            args=(worker_num, thread_num, thread_barrier, thread_event,
-                  gid_counter, gid_range, gid_ignore, gid_cutoff,
-                  webhook_url,
-                  local_counter, proxies,
-                  min_funds, min_members,
-                  timeout, no_close)
+            kwargs=dict(
+                worker_num=worker_num,
+                thread_num=thread_num,
+                thread_barrier=thread_barrier,
+                thread_event=thread_event,
+                proxies=proxies,
+                timeout=timeout,
+                no_close=no_close,
+                local_counter=local_counter,
+                gid_counter=gid_counter,
+                gid_range=gid_range,
+                gid_ignore=gid_ignore,
+                gid_cutoff=gid_cutoff,
+                min_funds=min_funds,
+                min_members=min_members
+            )
         )
         for thread_num in range(thread_count)
     ]
