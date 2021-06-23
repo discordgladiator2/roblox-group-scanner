@@ -8,9 +8,10 @@ if os.name == "nt":
     from win import set_affinity
 
 def worker_func(worker_num, worker_barrier, thread_count,
-                webhook_url, count_queue, gid_range, proxies,
-                min_funds, min_members,
-                timeout, no_close, gid_cutoff):
+                count_queue,
+                proxies, timeout, no_close,
+                gid_range, gid_cutoff,
+                min_funds, min_members):
     # set cpu affinity for this process
     cpu_num = worker_num % multiprocessing.cpu_count()
     if os.name == "nt":
