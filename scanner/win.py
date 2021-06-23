@@ -1,4 +1,5 @@
 import ctypes
+import os
 
 # https://sudonull.com/post/145181-Python-threading-or-GIL-is-almost-no-hindrance
 __setaffinity = ctypes.windll.kernel32.SetProcessAffinityMask
