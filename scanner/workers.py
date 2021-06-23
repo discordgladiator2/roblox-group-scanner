@@ -9,6 +9,7 @@ if os.name == "nt":
 
 def worker_func(worker_num, worker_barrier, thread_count,
                 count_queue,
+                webhook_url,
                 proxies, timeout, no_close,
                 gid_range, gid_cutoff,
                 min_funds, min_members):
