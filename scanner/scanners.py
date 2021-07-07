@@ -29,8 +29,8 @@ def scanner_func(
             proxy_addr = next(proxies)
 
         # establish connection to groups.roblox.com
+        sock = None
         try:
-            sock = None
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
             if proxy_addr:
